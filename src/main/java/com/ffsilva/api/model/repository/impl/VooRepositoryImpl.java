@@ -1,6 +1,8 @@
 package com.ffsilva.api.model.repository.impl;
 
 import com.ffsilva.api.model.auxiliar.VooAuxiliarConversao;
+import com.ffsilva.api.model.auxiliar.VoosDataSort;
+import com.ffsilva.api.model.auxiliar.VoosHoraSaidaSort;
 import com.ffsilva.api.model.entity.Voo;
 import com.ffsilva.api.model.repository.VooRepository;
 import com.ffsilva.api.model.util.impl.TimeUtilImpl;
@@ -30,6 +32,11 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class VooRepositoryImpl implements VooRepository {
+
+    @Autowired
+    private VoosDataSort dataSort;
+    @Autowired
+    private VoosHoraSaidaSort horaSaidaSort;
 
     @Autowired
     private TimeUtilImpl timeUtil;
@@ -65,6 +72,9 @@ public class VooRepositoryImpl implements VooRepository {
 
         todosOsVoos.addAll(this.findAllVoosOperadoraUberair());
         todosOsVoos.addAll(this.findAllVoosOperadora99Planes());
+
+        todosOsVoos.sort(dataSort);
+        todosOsVoos.sort(horaSaidaSort);
 
         return todosOsVoos;
     }

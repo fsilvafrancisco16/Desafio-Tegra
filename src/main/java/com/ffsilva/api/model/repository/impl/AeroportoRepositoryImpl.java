@@ -1,5 +1,6 @@
 package com.ffsilva.api.model.repository.impl;
 
+import com.ffsilva.api.model.auxiliar.AeroportosCidadeSort;
 import com.ffsilva.api.model.entity.Aeroporto;
 import com.ffsilva.api.model.repository.AeroportoRepository;
 import com.ffsilva.api.model.service.impl.AeroportoServiceImpl;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /**
@@ -21,6 +23,9 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class AeroportoRepositoryImpl implements AeroportoRepository {
+
+    @Autowired
+    private AeroportosCidadeSort aeroportosCidadeSort;
 
     private final String RESOURCES_PATH = System.getProperty("user.dir") + "/src/main/resources/static/resources";
     private static final Logger LOG = LoggerFactory.getLogger(AeroportoServiceImpl.class);
@@ -31,8 +36,12 @@ public class AeroportoRepositoryImpl implements AeroportoRepository {
         try {
             BufferedReader aeroportosJson = new BufferedReader(new FileReader(RESOURCES_PATH + "/aeroportos.json"));
 
-            return new Gson().fromJson(aeroportosJson, new TypeToken<List<Aeroporto>>() {
+            List<Aeroporto> aeroportos = new Gson().fromJson(aeroportosJson, new TypeToken<List<Aeroporto>>() {
             }.getType());
+
+            aeroportos.sort(aeroportosCidadeSort);
+
+            return aeroportos;
         } catch (FileNotFoundException e) {
             LOG.error(e.getMessage());
             return new ArrayList<>();
