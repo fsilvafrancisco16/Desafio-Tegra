@@ -16,6 +16,7 @@ import java.io.Reader;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.Logger;
@@ -63,11 +64,31 @@ public class VooRepositoryImpl implements VooRepository {
         List<Voo> todosOsVoos = new ArrayList<>();
 
         todosOsVoos.addAll(this.findAllVoosOperadoraUberair());
-        todosOsVoos.addAll(this.findAllVoosOperadoraUberair());
+        todosOsVoos.addAll(this.findAllVoosOperadora99Planes());
 
         return todosOsVoos;
     }
 
+    @Override
+    public List<Voo> findByVoosDiretos(String origem, String destino, LocalDate data) {
+        List<Voo> voos = new ArrayList<>();
+
+        this.findAll().forEach(voo -> {
+            if ((voo.getAeroportoOrigem().equalsIgnoreCase(origem)) && (voo.getAeroportoDestino().equalsIgnoreCase(destino)) && (voo.getData().equals(data))) {
+                voos.add(voo);
+            }
+        });
+
+        return voos;
+    }
+
+    /**
+     * Popula os dados de VooAuxiliarConversao em um Voo.
+     *
+     * @param auxiliar VooAuxiliarConversao
+     * @param operadora String
+     * @return Voo
+     */
     private Voo vooAuxiliarParaVoo(VooAuxiliarConversao auxiliar, String operadora) {
         Voo voo = new Voo();
 
