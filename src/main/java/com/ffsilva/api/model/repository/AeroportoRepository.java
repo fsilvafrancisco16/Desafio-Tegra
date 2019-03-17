@@ -2,6 +2,7 @@ package com.ffsilva.api.model.repository;
 
 import com.ffsilva.api.model.entity.Aeroporto;
 import java.util.List;
+import java.util.Optional;
 
 /**
  *
@@ -15,4 +16,12 @@ public interface AeroportoRepository {
      * @return List<Aeroporto>
      */
     List<Aeroporto> findAll();
+
+    /**
+     * Busca um aeroporto na lista de dados.
+     *
+     * @param origem String - edenticador do aeroporto
+     * @return Optional<Aeroporto>
+     */
+    Optional<Aeroporto> findByAeroporto(String aeroporto);
 }

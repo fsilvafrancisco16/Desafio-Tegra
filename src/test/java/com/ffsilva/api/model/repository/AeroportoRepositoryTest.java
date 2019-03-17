@@ -2,6 +2,7 @@ package com.ffsilva.api.model.repository;
 
 import com.ffsilva.api.model.entity.Aeroporto;
 import java.util.List;
+import java.util.Optional;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,5 +26,19 @@ public class AeroportoRepositoryTest {
         List<Aeroporto> aeroportos = this.aeroportoRepository.findAll();
 
         assertTrue(!aeroportos.isEmpty());
+    }
+
+    @Test
+    public void testFindByAeroportoExistente() {
+        Optional<Aeroporto> optional = this.aeroportoRepository.findByAeroporto("bSb");
+
+        assertTrue(optional.isPresent());
+    }
+
+    @Test
+    public void testFindByAeroportoNaoExitente() {
+        Optional<Aeroporto> optional = this.aeroportoRepository.findByAeroporto("OOO");
+
+        assertTrue(!optional.isPresent());
     }
 }
