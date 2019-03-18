@@ -32,12 +32,20 @@ public interface VooRepository {
     List<Voo> findAll();
 
     /**
-     * Busca todos os voos com rotas diretas.
+     * Busca todos os voos de uma mesma data com uma mesma origem.
      *
      * @param origem String - Origem do voo
+     * @param data LocalDate - data do voo
+     * @return List<Voo>
+     */
+    List<Voo> findByOrigemData(String origem, LocalDate data);
+
+    /**
+     * Busca todos os voos com de uma data com uma mesma origem.
+     *
      * @param destino String - Destino do voo
      * @param data LocalDate - data do voo
      * @return List<Voo>
      */
-    List<Voo> findByVoosDiretos(String origem, String destino, LocalDate data);
+    List<Voo> findByDestinoData(String destino, LocalDate data);
 }

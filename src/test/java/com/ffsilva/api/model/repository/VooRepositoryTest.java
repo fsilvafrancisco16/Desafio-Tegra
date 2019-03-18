@@ -46,8 +46,15 @@ public class VooRepositoryTest {
     }
 
     @Test
-    public void testFindByVoosDiretos() {
-        List<Voo> voos = this.vooRepository.findByVoosDiretos("BSB", "VCP", this.timeUtil.toLocalDate("2019-02-10"));
+    public void testFindByOrigemData() {
+        List<Voo> voos = this.vooRepository.findByOrigemData("BSB", this.timeUtil.toLocalDate("2019-02-10"));
+
+        assertTrue(!voos.isEmpty());
+    }
+
+    @Test
+    public void testFindByDestinoData() {
+        List<Voo> voos = this.vooRepository.findByDestinoData("VCP", this.timeUtil.toLocalDate("2019-02-10"));
 
         assertTrue(!voos.isEmpty());
     }

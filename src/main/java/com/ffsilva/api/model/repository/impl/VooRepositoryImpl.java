@@ -80,11 +80,24 @@ public class VooRepositoryImpl implements VooRepository {
     }
 
     @Override
-    public List<Voo> findByVoosDiretos(String origem, String destino, LocalDate data) {
+    public List<Voo> findByOrigemData(String origem, LocalDate data) {
         List<Voo> voos = new ArrayList<>();
 
         this.findAll().forEach(voo -> {
-            if ((voo.getAeroportoOrigem().equalsIgnoreCase(origem)) && (voo.getAeroportoDestino().equalsIgnoreCase(destino)) && (voo.getData().equals(data))) {
+            if ((voo.getAeroportoOrigem().equalsIgnoreCase(origem)) && (voo.getData().equals(data))) {
+                voos.add(voo);
+            }
+        });
+
+        return voos;
+    }
+
+    @Override
+    public List<Voo> findByDestinoData(String destino, LocalDate data) {
+        List<Voo> voos = new ArrayList<>();
+
+        this.findAll().forEach(voo -> {
+            if ((voo.getAeroportoDestino().equalsIgnoreCase(destino)) && (voo.getData().equals(data))) {
                 voos.add(voo);
             }
         });
