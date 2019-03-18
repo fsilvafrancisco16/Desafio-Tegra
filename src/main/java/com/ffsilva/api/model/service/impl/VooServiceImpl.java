@@ -9,6 +9,8 @@ import com.ffsilva.api.model.repository.impl.VooRepositoryImpl;
 import com.ffsilva.api.model.response.Response;
 import com.ffsilva.api.model.service.VooService;
 import com.ffsilva.api.model.util.impl.TimeUtilImpl;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,9 +44,7 @@ public class VooServiceImpl implements VooService {
             return ResponseEntity.badRequest().body(response);
         }
 
-        List<RotaDto> rotas = new ArrayList<>();
-        this.buscarRotasSemEscala(dto).forEach(rota -> rotas.add(rota));
-
+        List<RotaDto> rotas = this.buscarRotasDeVoos(dto);
         if (rotas.isEmpty()) {
             response.getErrors().add("Nenhum voo disponível.");
             return ResponseEntity.badRequest().body(response);
@@ -55,17 +55,125 @@ public class VooServiceImpl implements VooService {
     }
 
     @Override
-    public List<RotaDto> buscarRotasSemEscala(VooRequestDto dto) {
+    public List<RotaDto> buscarRotasDeVoos(VooRequestDto dto) {
         List<RotaDto> rotas = new ArrayList<>();
 
-        this.vooRepository.findByVoosDiretos(dto.getDe(), dto.getPara(), this.timeUtil.toLocalDate(dto.getDate()))
-                .forEach(voo -> {
+        String origem = dto.getDe();
+        String destino = dto.getPara();
+        LocalDate data = this.timeUtil.toLocalDate(dto.getDate());
+
+        this.separaRotas(this.vooRepository.findByOrigemData(origem, data), this.vooRepository.findByDestinoData(destino, data))
+                .forEach(rotasList -> {
                     List<Voo> voos = new ArrayList<>();
-                    voos.add(voo);
+                    rotasList.forEach(voo -> voos.add(voo));
+
                     rotas.add(this.vooParaRotaDto(voos, dto));
                 });
 
         return rotas;
+    }
+
+    /**
+     * Separa e organiza as rotas de voos.
+     *
+     * @param origens List<Voo>
+     * @param destinos List<Voo>
+     * @return List<List<Voo>>
+     */
+    private List<List<Voo>> separaRotas(List<Voo> origens, List<Voo> destinos) {
+        List<List<Voo>> listVoos = new ArrayList<>();
+
+        this.separaRotasSemEscalas(origens, destinos)
+                .forEach(voos -> listVoos.add(voos));
+
+        this.separaRotasComEscalas(origens, destinos)
+                .forEach(voos -> listVoos.add(voos));
+
+        return listVoos;
+    }
+
+    /**
+     * Separa as rotas de voos sem escala.
+     *
+     * @param origens List<Voo>
+     * @param destinos List<Voo>
+     * @return List<List<Voo>>
+     */
+    private List<List<Voo>> separaRotasSemEscalas(List<Voo> origens, List<Voo> destinos) {
+        List<List<Voo>> listVoos = new ArrayList<>();
+
+        origens.forEach(origem -> {
+            destinos.forEach(destino -> {
+                if (origem.equals(destino)) {
+                    List<Voo> rota = new ArrayList<>();
+                    rota.add(origem);
+                    listVoos.add(rota);
+                }
+            });
+        });
+
+        return listVoos;
+    }
+
+    /**
+     * Separa as rotas de voos com escalas de dois voos, sendo o tempo de espera entre os voos não sejá maior que 12 horas.
+     *
+     * @param origens List<Voo>
+     * @param destinos List<Voo>
+     * @return List<List<Voo>>
+     */
+    private List<List<Voo>> separaRotasComEscalas(List<Voo> origens, List<Voo> destinos) {
+        List<List<Voo>> listVoos = new ArrayList<>();
+
+        origens.forEach(origem -> {
+            destinos.forEach(destino -> {
+                if ((origem.getAeroportoDestino().equalsIgnoreCase(destino.getAeroportoOrigem())) && (this.tempoDeEsperaValido(origem, destino))) {
+                    List<Voo> rota = new ArrayList<>();
+                    rota.add(origem);
+                    rota.add(destino);
+                    listVoos.add(rota);
+                }
+            });
+        });
+
+        return listVoos;
+    }
+
+    /**
+     * Retorna TRUE o tempo de espera entre a chagada do primeiro voo e a saida se segundo voo for menor que 12 horas e maior que
+     * 5 minutos.
+     *
+     * @param origem Voo
+     * @param destino Voo
+     * @return Boolean
+     */
+    private Boolean tempoDeEsperaValido(Voo origem, Voo destino) {
+        LocalDateTime origemChegada = origem.getData().atTime(origem.getHorarioChegada());
+        LocalDateTime destinoSaida = destino.getData().atTime(destino.getHorarioSaida());
+
+        return !(this.tempoDeEsperaCurto(origemChegada, destinoSaida) && tempoDeEsperaLongo(origemChegada, destinoSaida));
+    }
+
+    /**
+     * Retorna TRUE o tempo de espera entre a chagada do primeiro e a saido se segundo voo for maior que 12 horas.
+     *
+     * @param origemChegada LocalDateTime - Chegada do primeiro voo.
+     * @param destinoSaida LocalDateTime - Saida do segundo voo.
+     * @return Boolean
+     */
+    private Boolean tempoDeEsperaLongo(LocalDateTime origemChegada, LocalDateTime destinoSaida) {
+        return origemChegada.plusHours(Long.valueOf(12)).isAfter(destinoSaida);
+    }
+
+    /**
+     * Retorna TRUE se o primeiro voo não chegar com pelo menos 5 minutos de antecedência da saida do segundo voo.
+     *
+     * @param origemChegada LocalDateTime - Chegada do primeiro voo.
+     * @param destinoSaida LocalDateTime - Saida do segundo voo.
+     * @return Boolean
+     */
+    private Boolean tempoDeEsperaCurto(LocalDateTime origemChegada, LocalDateTime destinoSaida) {
+        return origemChegada.plusMinutes(Long.valueOf(5)).isAfter(destinoSaida);
     }
 
     /**

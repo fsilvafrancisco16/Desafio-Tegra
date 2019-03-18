@@ -22,8 +22,8 @@ public class VooServiceTest {
     private VooService vooService;
 
     @Test
-    public void testBuscarRotasSemEscala() {
-        List<RotaDto> rotas = this.vooService.buscarRotasSemEscala(this.getDto());
+    public void testBuscarRotasDeVoos() {
+        List<RotaDto> rotas = this.vooService.buscarRotasDeVoos(this.getDto());
 
         assertTrue(!rotas.isEmpty());
     }

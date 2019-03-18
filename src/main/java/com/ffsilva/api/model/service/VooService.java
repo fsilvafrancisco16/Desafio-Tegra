@@ -24,10 +24,10 @@ public interface VooService {
     ResponseEntity<Response<List<RotaDto>>> buscarRotasDeVoos(VooRequestDto dto, BindingResult result);
 
     /**
-     * Busca todos os voos sem escala disponiveis para a rota.
+     * Busca todos os voos disponiveis.
      *
      * @param dto VooRequestDto
      * @return List<RotaDto>
      */
-    List<RotaDto> buscarRotasSemEscala(VooRequestDto dto);
+    List<RotaDto> buscarRotasDeVoos(VooRequestDto dto);
 }
